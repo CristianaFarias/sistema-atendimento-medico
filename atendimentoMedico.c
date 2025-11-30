@@ -131,7 +131,7 @@ void exibirPacientes(paciente *lista, int total){
 // --------------- Agendamento de consulta--------------------
 void agendarConsulta(consulta **listaConsultas, paciente *listaPacientes,int totalPacientes, medico *listaMedico,int totalMedicos, int *totalConsultas){
     if(totalPacientes == 0 || totalMedicos == 0){
-        printf("Necessario cadastrar ao menos 1 paciente e 1 medico.\n");
+        printf("\nNecessario cadastrar ao menos 1 paciente e 1 medico.\n");
         return;
     }else if(*totalConsultas >= MAXCONSULTAS){
         printf("\nNao ha vagas disponiveis.\n");
@@ -161,10 +161,13 @@ void agendarConsulta(consulta **listaConsultas, paciente *listaPacientes,int tot
     printf("Digite a data (DD MM AAAA): ");
     scanf("%d %d %d", &nova->dia, &nova->mes, &nova->ano);
     limparBuffer();
-    
-    printf("Digite a hora (7 a 18)");
-    scanf("%de", &nova->hora);
-    limparBuffer();
+    do{
+        printf("\nEscolha um horario entre 7 e 18 horas.\n");
+        scanf("%d", &nova->hora);
+        if(nova->hora <7 ||  nova->hora > 18 ){
+            printf("Hora invalida! As consultas so podem ser marcadas entre 07h e 18h.\n");
+        }
+    }while(nova->hora <7 ||  nova->hora > 18 );
     nova->minuto = 0;
     (*totalConsultas)++;
     printf("\nConsulta agendada!\n");
@@ -175,7 +178,9 @@ void exibirConsultas(consulta *listaConsultas, int totalConsultas){
         printf("\nAgenda de consultas vazia.");
         return;
     }
-    printf("\nLista de consultas\n ");
+    printf("\nLista de consultas\n");
+
+    
     
 }
 
