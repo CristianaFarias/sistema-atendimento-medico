@@ -34,7 +34,12 @@ typedef struct{
 
 // Estrutura historico de consultas
 typedef struct{
-    
+    int idConsulta;
+    int idPaciente;
+    int idMedico;
+    int dia, mes, ano;
+    int hora;
+    char observacoes[MAXHISTORICO];
 } historicoConsulta;
 
 // ----------------Função limpar buffer------------------------
