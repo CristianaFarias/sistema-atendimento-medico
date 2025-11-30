@@ -52,6 +52,7 @@ void cadastrarMedico(medico **lista, int *total){
     *lista = realloc(*lista, (*total + 1) *sizeof(medico));
     if(*lista == NULL){
         printf("Erro ao alocar memoria.\n");
+        return;
     }
     medico *novo = &(*lista)[*total];
     novo->idMedico = *total + 1;
@@ -65,7 +66,7 @@ void cadastrarMedico(medico **lista, int *total){
         printf("Digite o CRM (somente numeros): ");
         fgets(novo->crmMedico, MAXCRM, stdin);
         novo->crmMedico[strcspn(novo->crmMedico, "\n")] = '\0';
-        printf("Digite UF: ");
+        printf("Digite UF (ex: SP): ");
         fgets(novo->estadoEmissor, 3, stdin);
         novo->estadoEmissor [strcspn(novo->estadoEmissor, "\n")] = '\0';
         for(int i = 0; novo->estadoEmissor[i] != '\0'; i++){
@@ -91,6 +92,7 @@ void cadastrarPaciente(paciente **lista, int *total){
     *lista = realloc(*lista, (*total + 1) *sizeof(paciente));
     if(*lista == NULL){
         printf("Erro ao alocar memoria.\n");
+        return;
     }
     paciente *novo = &(*lista)[*total];
     novo->idPaciente = *total + 1;
@@ -133,8 +135,54 @@ void exibirPacientes(paciente *lista, int total){
     }
 }
 
+//---------------Registrar Historico ----------------------------
+void registrarHistorico(historicoConsulta **listaHistorico, int *totalHistorico, consulta registro)
+{
+    *listaHistorico = realloc(*listaHistorico, (*totalHistorico + 1) * sizeof(historicoConsulta));
+    if (*listaHistorico == NULL)
+    {
+        printf("Erro ao realocar memoria para historico.\n");
+        return;
+    }
+    historicoConsulta *novoRegistro = &(*listaHistorico)[*totalHistorico];
+    novoRegistro->idConsulta = registro.idConsulta;
+    novoRegistro->idPaciente = registro.idPaciente;
+    novoRegistro->idMedico = registro.idMedico;
+    novoRegistro->dia = registro.dia;
+    novoRegistro->mes = registro.mes;
+    novoRegistro->ano = registro.ano;
+    novoRegistro->hora = registro.hora;
+
+    printf("\nDigite observacoes da consulta (ou deixe vazio): ");
+    limparBuffer();
+    fgets(novoRegistro->observacoes, MAXHISTORICO, stdin);
+    novoRegistro->observacoes[strcspn(novoRegistro->observacoes, "\n")] = '\0';
+
+    (*totalHistorico)++;
+    printf("Historico registrado com sucesso!\n");
+}
+// ---------------- Exibir Historico ----------------
+void exibirHistorico(historicoConsulta *lista, int total)
+{
+    if (total == 0)
+    {
+        printf("\nNenhum historico registrado.\n");
+        return;
+    }
+
+    printf("\n------ HISTORICO DE CONSULTAS ------\n");
+    for (int i = 0; i < total; i++)
+    {
+        printf("\nConsulta ID: %d\n", lista[i].idConsulta);
+        printf("Paciente ID: %d | Medico ID: %d\n", lista[i].idPaciente, lista[i].idMedico);
+        printf("Data: %02d/%02d/%04d | Hora: %02d:00\n", lista[i].dia, lista[i].mes, lista[i].ano, lista[i].hora);
+        printf("Observacoes: %s\n", lista[i].observacoes);
+    }
+}
+
+
 // --------------- Agendamento de consulta--------------------
-void agendarConsulta(consulta **listaConsultas, paciente *listaPacientes,int totalPacientes, medico *listaMedico,int totalMedicos, int *totalConsultas){
+void agendarConsulta(consulta **listaConsultas, paciente *listaPacientes, int totalPacientes, medico *listaMedicos, int totalMedicos, int *totalConsultas, historicoConsulta **listaHistorico, int *totalHistorico){
     if(totalPacientes == 0 || totalMedicos == 0){
         printf("\nNecessario cadastrar ao menos 1 paciente e 1 medico.\n");
         return;
@@ -158,14 +206,15 @@ void agendarConsulta(consulta **listaConsultas, paciente *listaPacientes,int tot
     scanf("%d", &nova->idPaciente);
     limparBuffer();
     //Lista de medicos
-    exibirMedicos(listaMedico,totalMedicos);
+    exibirMedicos(listaMedicos,totalMedicos);
     printf("\nDigite o ID do Medico: ");
     scanf("%d", &nova->idMedico);
     limparBuffer();
-
+    //Data
     printf("Digite a data (DD MM AAAA): ");
     scanf("%d %d %d", &nova->dia, &nova->mes, &nova->ano);
     limparBuffer();
+    //Hora
     do{
         printf("\nEscolha um horario entre 7 e 18 horas.\n");
         scanf("%d", &nova->hora);
@@ -176,6 +225,8 @@ void agendarConsulta(consulta **listaConsultas, paciente *listaPacientes,int tot
     nova->minuto = 0;
     (*totalConsultas)++;
     printf("\nConsulta agendada!\n");
+
+    registrarHistorico(listaHistorico, totalHistorico, *nova);
 }
 // ---------------Listar Consultas --------------------------
 void exibirConsultas(consulta *listaConsultas, int totalConsultas){
@@ -183,10 +234,11 @@ void exibirConsultas(consulta *listaConsultas, int totalConsultas){
         printf("\nAgenda de consultas vazia.");
         return;
     }
-    printf("\nLista de consultas\n");
-
-    
-    
+    printf("\n------Lista de consultas agendadas------\n");
+    for (int i = 0; i < totalConsultas; i++)
+    {
+        printf("ID: %d | Paciente ID: %d | Medico ID: %d | Data: %02d/%02d/%04d | Hora: %02d:00\n", listaConsultas[i].idConsulta, listaConsultas[i].idPaciente, listaConsultas[i].idMedico, listaConsultas[i].dia, listaConsultas[i].mes, listaConsultas[i].ano, listaConsultas[i].hora);
+    }
 }
 
 // ---------------Menu cadastrar ----------------------------
@@ -235,7 +287,8 @@ int menuPrincipal(int menu ){
     return menu;
 }
 
-int main(){
+int main()
+{
     int menu = 0;
     paciente *listaPacientes = NULL;
     int totalPacientes = 0;
@@ -243,8 +296,9 @@ int main(){
     int totalMedicos = 0;
     consulta *listaConsultas = NULL;
     int totalConsultas = 0;
+    historicoConsulta *listaHistorico = NULL;
+    int totalHistorico = 0;
 
-    
     while(menu != 6){
         menu = menuPrincipal(menu);
         if(menu == 1){
@@ -254,8 +308,20 @@ int main(){
 
         }
         else if( menu == 2){
-            agendarConsulta(&listaConsultas, listaPacientes, totalPacientes, listaMedicos, totalMedicos, &totalConsultas);
+            agendarConsulta(&listaConsultas, listaPacientes, totalPacientes, listaMedicos, totalMedicos, &totalConsultas, &listaHistorico, &totalHistorico);
             exibirConsultas(listaConsultas, totalConsultas);
+        }
+        else if (menu == 3)
+        {
+            exibirHistorico(listaHistorico, totalHistorico);
+        }
+        else if (menu == 4)
+        {
+            printf("\nFuncao cancelar/reagendar ainda nao implementada.\n");
+        }
+        else if (menu == 5)
+        {
+            printf("\nFuncao buscar ainda nao implementada.\n");
         }
     }
     printf("\nSaindo do programa.");
