@@ -183,7 +183,7 @@ typedef struct {
     printf("\nPaciente cadastrado com sucesso! ID: %d\n", novo->idPaciente);
 }
 
-//---------------Listar Medico--------------------
+//---------------Listar Medico-------------------
     void exibirMedicos(const medico *lista, int total) {
     if (total == 0) {
         printf("\nNenhum medico cadastrado.\n");
